@@ -10,10 +10,10 @@ import java.util.Queue;
 public class ArvoreBinaria<T> extends ArvoreBinariaBase<T> {
 
     /** Nó raiz da árvore. **/
-    private NoArvore<T> raiz;
+    protected NoArvore<T> raiz; // alterado de 'private' para 'protected' para as subclasses enxergarem (como ArvoreAVL)
 
     /** Contador de nós **/
-    private int totalNos;
+    protected int totalNos; // alterado de 'private' para 'protected' para as subclasses enxergarem (como ArvoreAVL)
 
     /**
      * Cria uma Árvore Binária de Busca vazia com o critério de indexação
