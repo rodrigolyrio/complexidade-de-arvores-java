@@ -196,4 +196,8 @@ public class ArvoreBinaria<T> extends ArvoreBinariaBase<T> {
         sb.append(no.valor).append(", ");
         caminharEmOrdemRecursivo(no.direita, sb);
     }
+
+    public String toString() {
+        return caminharEmOrdem();
+    }
 }
