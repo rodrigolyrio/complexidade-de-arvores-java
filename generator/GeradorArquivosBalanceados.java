@@ -7,33 +7,24 @@ import java.util.ArrayList;
 
 public class GeradorArquivosBalanceados {
     private static final int NUM_REGISTROS = 2000000; // Quantidade de registros a serem gerados
-    private static final String NOME_ARQUIVO = "alunosBalanceados.txt";
+    private static final String NOME_ARQUIVO = "SeriesBalanceadas.txt";
     
-    private static final String[] PRENOMES = {
-        "Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gabriel", "Helena", "Isabela", "João",
-        "Juliana", "Lucas", "Mariana", "Nathan", "Olivia", "Paulo", "Quésia", "Rafael", "Sofia", "Thiago",
-        "Victor", "William", "Xavier", "Yasmin", "Zuleica", "Alfredo", "Beatriz", "Caio", "Denise", "Eliana",
-        "Felipe", "Gustavo", "Heitor", "Igor", "Jéssica", "Kevin", "Larissa", "Mateus", "Natália", "Otávio",
-        "Patrícia", "Renato", "Sandra", "Tadeu", "Ursula", "Vinícius", "Wellington", "Zilda", "Adriana", "Benício",
-        "Cristina", "Davi", "Emanuel", "Flávia", "Geraldo", "Heloísa", "Ícaro", "Jaqueline", "Leonardo", "Marta",
-        "Nelson", "Orlando", "Priscila", "Raquel", "Saulo", "Tatiane", "Ubirajara", "Vera", "Wesley", "Zenaide",
-        "Alice", "Brenda", "Caetano", "Danilo", "Enzo", "Fabiana", "Gilberto", "Henrique", "Isadora", "José",
-        "Kátia", "Lorena", "Maurício", "Natanael", "Osvaldo", "Pamela", "Regina", "Sandro", "Tânia", "Ulisses",
-        "Vânia", "Wilson", "Yago", "Zélia", "Amélia", "Bernardo", "Celso", "Dulce", "Edson", "Fátima", "Gilmar",
-        "Humberto", "Irene", "Jorge", "Kleber", "Luciana", "Marcelo", "Nadir", "Otacílio", "Paula", "Renata"
+    private static final String[] NOMES_SERIE = {
+            "O Mistério de", "A Herança de", "Crônicas de", "Segredos em", "Ventos de",
+            "O Último", "Além de", "Caminhos de", "Diários de", "Império de",
+            "A Lenda de", "Fronteiras de", "Destino em", "Sombras de", "Relatos de"
     };
     
-    private static final String[] SOBRENOMES = {
-        "Almeida", "Barbosa", "Campos", "Dias", "Evangelista", "Ferreira", "Gomes", "Henrique", "Iglesias", "Junqueira",
-        "Klein", "Lima", "Medeiros", "Nascimento", "Oliveira", "Pereira", "Queiroz", "Rodrigues", "Silva", "Teixeira",
-        "Uchoa", "Vasconcelos", "Watanabe", "Ximenes", "Yamamoto", "Zanetti", "Araújo", "Borges", "Coelho", "Dantas",
-        "Esteves", "Farias", "Guimarães", "Holanda", "Ivo", "Jardim", "Krieger", "Lacerda", "Monteiro", "Neves",
-        "Oliveira", "Porto", "Quintana", "Ramos", "Sanches", "Torrico", "Urbano", "Vieira", "Wanderley", "Xavier",
-        "Yunes", "Zampieri", "Abreu", "Barreto", "Coutinho", "Delgado", "Elias", "França", "Godoy", "Haddad",
-        "Ibrahim", "Jacob", "Lopes", "Moura", "Nogueira", "Ortega", "Pinto", "Quaresma", "Reis", "Souto",
-        "Torres", "Ubaldo", "Valente", "Weber", "Ximenes", "Yamaguchi", "Zanella", "Alvarenga", "Bittencourt", "Carvalho",
-        "Duarte", "Espíndola", "Freitas", "Gonçalves", "Herrera", "Ishikawa", "Junqueira", "Lacerda", "Mancini", "Noronha",
-        "Orsini", "Paz", "Quevedo", "Rangel", "Souza", "Tavares", "Uchoa", "Vilela", "Werneck", "Xisto"
+    private static final String[] SUBSTANTIVOS_SERIE = {
+            "Dinastia", "Neve", "Justiça", "Papel", "Sangue", "Poder", "Liberdade",
+            "Honra", "Família", "Guerra", "Esperança", "Traição", "Vingança", "Glória",
+            "Tempo", "Destino", "Amazonas", "Coroação", "Sertão", "Cidade"
+    };
+
+    private static final String[] PAISES = {
+            "Brasil", "Portugal", "Angola", "Moçambique", "Cabo Verde", "Timor-Leste",
+            "Guiné-Bissau", "Guiné Equatorial", "EUA", "Reino Unido", "Espanha", "França",
+            "Japão", "Coréia do Sul", "China"
     };
     
     public static void main(String[] args) {
@@ -50,9 +41,10 @@ public class GeradorArquivosBalanceados {
             
             for (int i = 0; i < NUM_REGISTROS; i++) {
                 int id = ids.get(i);
-                String nome = gerarNomeAleatorio(random);
-                float nota = random.nextFloat() * 10; // Gera uma nota entre 0 e 10
-                writer.write(id + ";" + nome + ";" + String.format("%.2f", nota).replace(',', '.') + "\n");
+                String nome = gerarNomeSerie(random);
+                int anoLancamento = 1980 + random.nextInt(47);
+                String pais = PAISES[random.nextInt(PAISES.length)];
+                writer.write(id + ";" + nome + ";" + anoLancamento + ";" + pais + "\n");
                 
                 if ((i + 1) % 1_000_000 == 0) {
                     System.out.println((i + 1) + " registros gerados...");
@@ -73,9 +65,9 @@ public class GeradorArquivosBalanceados {
         gerarIdentificadoresBalanceados(ids, meio + 1, fim);
     }
     
-    private static String gerarNomeAleatorio(Random random) {
-        String primeiroNome = PRENOMES[random.nextInt(PRENOMES.length)];
-        String sobrenome = SOBRENOMES[random.nextInt(SOBRENOMES.length)];
-        return primeiroNome + " " + sobrenome;
+    private static String gerarNomeSerie(Random random) {
+        String nome_serie = NOMES_SERIE[random.nextInt(NOMES_SERIE.length)];
+        String substantivo_serie = SUBSTANTIVOS_SERIE[random.nextInt(SUBSTANTIVOS_SERIE.length)];
+        return nome_serie + " " + substantivo_serie;
     }
 }
