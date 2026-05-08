@@ -1,25 +1,26 @@
 // App que usará a árvore nativa do java.
-// Esse código é o antigo Main.java do trabalho anterior. Falta inserir a lógica nova no codigo.
 
 package br.ifes.tpa.app;
 
+import br.ifes.tpa.dominio.ComparatorSeriesPorNome;
 import br.ifes.tpa.dominio.Series;
-import br.ifes.tpa.biblioteca.IColecao;
-import br.ifes.tpa.listaencadeada.ListaEncadeada;
+//import br.ifes.tpa.biblioteca.IColecao;
+//import br.ifes.tpa.listaencadeada.ListaEncadeada;
 import br.ifes.tpa.util.MedidorTempo;
 import br.ifes.tpa.util.ResultadoMedicao;
-import br.ifes.tpa.listaencadeada.ListaEncadeadaArrayList;
-import br.ifes.tpa.listaencadeada.ListaEncadeadaLinkedList;
+//import br.ifes.tpa.listaencadeada.ListaEncadeadaArrayList;
+//import br.ifes.tpa.listaencadeada.ListaEncadeadaLinkedList;
 
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.TreeSet;
 
-public class Main {
+public class AppJavaStandard {
 
-    public static void carregarDados(IColecao<Series> l) { //Carrega o arquivo de texto
+    public static void carregarDados(TreeSet<Series> l) { //Carrega o arquivo de texto
         try {
             ResultadoMedicao<Integer> resultado = MedidorTempo.medirComRetorno(() -> { //Ao identificar o arquivo, já é iniciado o cálculo do tempo
                 int quantidade = 0;
@@ -41,7 +42,7 @@ public class Main {
                             String pais = partes[2];
 
                             Series s = new Series(nome, ano, pais);
-                            l.adicionar(s);
+                            l.add(s);
                             quantidade++;
                         }
                     }
@@ -55,7 +56,7 @@ public class Main {
 
             System.out.println("Dados carregados com sucesso.");
             System.out.println("Quantidade de séries carregadas: " + resultado.getResultado());
-            MedidorTempo.imprimirTempo("Tempo de leitura do arquivo e inserção na lista", resultado.getTempoNano());
+            MedidorTempo.imprimirTempo("Tempo de leitura do arquivo e inserção na árvore", resultado.getTempoNano());
 
         } catch (RuntimeException e) {
             if (e.getCause() instanceof FileNotFoundException) {
@@ -69,7 +70,7 @@ public class Main {
     //Início do Menu
 
     public static void main(String[] args) {
-        IColecao<Series> l = new ListaEncadeada<Series>();
+        TreeSet<Series> l = new TreeSet<>(new ComparatorSeriesPorNome());
         carregarDados(l);
 
         int ano, resp;
@@ -78,7 +79,7 @@ public class Main {
 
         try {
             do {
-                String msg = "**********************\n" +
+                String msg = "*** MENU JAVA TREESET ***\n" +
                         "Escolha uma opção:\n" +
                         "1) Adicionar uma Série\n" +
                         "2) Remover uma Série\n" +
@@ -93,8 +94,7 @@ public class Main {
                 scanner.nextLine();
 
                 if (resp < 0 || resp > 5) {
-                    System.out.println("Opção inválida.");
-                    System.out.println("Tente novamente.\n");
+                    System.out.println("\nOpção inválida. Tente novamente.\n");
                     continue;
                 }
 
@@ -112,7 +112,7 @@ public class Main {
 
                         Series novaSerie = new Series(nome, ano, pais);
 
-                        long tempoAdicionar = MedidorTempo.medir(() -> l.adicionar(novaSerie)); //Tempo de adição (Apesar de sempre funcionar, seu foco é durante o uso do arquivo)
+                        long tempoAdicionar = MedidorTempo.medir(() -> l.add(novaSerie)); //Tempo de adição (Apesar de sempre funcionar, seu foco é durante o uso do arquivo)
 
                         System.out.println("Série adicionada com sucesso.");
                         MedidorTempo.imprimirTempo("Tempo de inserção", tempoAdicionar);
@@ -124,7 +124,7 @@ public class Main {
 
                         Series chaveRemocao = new Series(nome, 0, "");
 
-                        ResultadoMedicao<Boolean> resultadoRemocao = MedidorTempo.medirComRetorno(() -> l.remover(chaveRemocao)); //Tempo de remoção
+                        ResultadoMedicao<Boolean> resultadoRemocao = MedidorTempo.medirComRetorno(() -> l.remove(chaveRemocao)); //Tempo de remoção
 
                         if (resultadoRemocao.getResultado()) {
                             System.out.println("Série removida com sucesso.");
@@ -141,9 +141,9 @@ public class Main {
 
                         Series chavePesquisa = new Series(nome, 0, "");
 
-                        ResultadoMedicao<Series> resultadoPesquisa = MedidorTempo.medirComRetorno(() -> l.pesquisar(chavePesquisa)); //Executa o código para medir o tempo de Busca
+                        ResultadoMedicao<Series> resultadoPesquisa = MedidorTempo.medirComRetorno(() -> l.floor(chavePesquisa)); //floor retorna o elemento menor ou igual ao elemento pesquisado
 
-                        Series serieEncontrada = resultadoPesquisa.getResultado();
+                        Series serieEncontrada = l.floor(chavePesquisa);
 
                         if (serieEncontrada == null) {
                             System.out.println("Série não existe.");
@@ -155,16 +155,15 @@ public class Main {
                         break;
 
                     case 4:
-                        System.out.println("Lista de Séries:");
-                        System.out.println(l.toString());
-                        System.out.println();
+                        System.out.println("Listagem das Séries:");
+                        l.forEach(System.out::println);
                         break;
 
                     case 5:
-                        ResultadoMedicao<Integer> resultadoQuantidade = MedidorTempo.medirComRetorno(() -> l.quantidadeNos()); //Executa o código para imprimir a quantidade de nós e o tempo corrido
+                        ResultadoMedicao<Integer> resultadoQuantidade = MedidorTempo.medirComRetorno(() -> l.size()); //Executa o código para imprimir a quantidade de nós e o tempo corrido
 
                         System.out.println("Quantidade de nós: " + resultadoQuantidade.getResultado());
-                        MedidorTempo.imprimirTempo("Tempo do método quantidadeNos", resultadoQuantidade.getTempoNano());
+                        MedidorTempo.imprimirTempo("Tempo do .size", resultadoQuantidade.getTempoNano());
                         break;
 
                     case 0:
