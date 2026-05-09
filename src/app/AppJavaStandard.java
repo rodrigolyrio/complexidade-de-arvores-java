@@ -4,50 +4,70 @@ package br.ifes.tpa.app;
 
 import br.ifes.tpa.dominio.ComparatorSeriesPorNome;
 import br.ifes.tpa.dominio.Series;
-//import br.ifes.tpa.biblioteca.IColecao;
-//import br.ifes.tpa.listaencadeada.ListaEncadeada;
 import br.ifes.tpa.util.MedidorTempo;
 import br.ifes.tpa.util.ResultadoMedicao;
-//import br.ifes.tpa.listaencadeada.ListaEncadeadaArrayList;
-//import br.ifes.tpa.listaencadeada.ListaEncadeadaLinkedList;
 
-import java.util.Scanner;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.Scanner;
 import java.util.TreeSet;
 
 public class AppJavaStandard {
-
-    public static void carregarDados(TreeSet<Series> l) { //Carrega o arquivo de texto
+    public static void carregarDados(TreeSet<Series> l) {
         try {
-            ResultadoMedicao<Integer> resultado = MedidorTempo.medirComRetorno(() -> { //Ao identificar o arquivo, já é iniciado o cálculo do tempo
+            ResultadoMedicao<Integer> resultado = MedidorTempo.medirComRetorno(() -> {
                 int quantidade = 0;
 
-                try (BufferedReader buff = new BufferedReader(new FileReader("series_100k.txt"))) { //Localização do arquivo
+                try (BufferedReader buff = new BufferedReader(new FileReader("400k_SeriesOrdenadas.txt"))) {
                     System.out.println("Carregando dados do arquivo...");
                     String linha;
 
-                    while ((linha = buff.readLine()) != null) { //Enquanto a linha não estiver vazia
-                        if (linha.trim().isEmpty()) { //remove os espaços vazios da lista
+                    // Variáveis para guardar as posições de cada dado (necessário para o programa não verificar a cada linha a quantidade de ";" em uma linha)
+                    int idxNome = -1;
+                    int idxAno = -1;
+                    int idxPais = -1;
+                    boolean formatoDefinido = false;
+
+                    while ((linha = buff.readLine()) != null) {
+                        if (linha.trim().isEmpty()) {
                             continue;
                         }
 
-                        String[] partes = linha.split(";"); //Divide a linha a cada ";" encontrada
+                        String[] partes = linha.split(";");
 
-                        if (partes.length == 3) { //se forem encontradas 3 partes separadas por ";" na linha
-                            String nome = partes[0];
-                            int ano = Integer.parseInt(partes[1]);
-                            String pais = partes[2];
+                        // Verifica o formato apenas até encontrar a primeira linha válida
+                        if (!formatoDefinido) {
+                            if (partes.length == 4) {
+                                idxNome = 1;
+                                idxAno  = 2;
+                                idxPais = 3;
+                                formatoDefinido = true;
+                            } else if (partes.length == 3) {
+                                idxNome = 0;
+                                idxAno  = 1;
+                                idxPais = 2;
+                                formatoDefinido = true;
+                            } else {
+                                // Se a linha não tem 3 ou 4 partes, ignora e tenta descobrir o padrão na próxima
+                                continue;
+                            }
+                        }
 
-                            Series s = new Series(nome, ano, pais);
-                            l.add(s);
+                        try {
+                            String nome = partes[idxNome];
+                            int ano  = Integer.parseInt(partes[idxAno]);
+                            String pais = partes[idxPais];
+
+                            l.add(new Series(nome, ano, pais));
                             quantidade++;
+                        } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
                         }
                     }
 
-                } catch (IOException | NumberFormatException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
 
@@ -60,125 +80,142 @@ public class AppJavaStandard {
 
         } catch (RuntimeException e) {
             if (e.getCause() instanceof FileNotFoundException) {
-                System.out.println("Arquivo 'dados.txt' não encontrado. Iniciando com lista vazia.\n");
+                System.out.println("Arquivo não encontrado. Iniciando com lista vazia.\n");
             } else {
                 System.out.println("Erro ao ler o arquivo: " + e.getCause().getMessage());
             }
         }
     }
 
-    //Início do Menu
+        //Início do Menu
 
-    public static void main(String[] args) {
-        TreeSet<Series> l = new TreeSet<>(new ComparatorSeriesPorNome());
-        carregarDados(l);
+        public static void main(String[] args) {
+            Comparator<Series> comparador = new ComparatorSeriesPorNome();
 
-        int ano, resp;
-        String nome, pais;
-        Scanner scanner = new Scanner(System.in);
+            TreeSet<Series> l = new TreeSet<>(comparador);
+            carregarDados(l);
 
-        try {
-            do {
-                String msg = "*** MENU JAVA TREESET ***\n" +
-                        "Escolha uma opção:\n" +
-                        "1) Adicionar uma Série\n" +
-                        "2) Remover uma Série\n" +
-                        "3) Pesquisar uma Série\n" +
-                        "4) Listar Séries\n" +
-                        "5) Quantidade de nós\n" +
-                        "0) Sair\n";
+            int ano, resp;
+            String nome, pais;
+            Scanner scanner = new Scanner(System.in);
 
-                System.out.println(msg);
-                System.out.print("Sua opção: ");
-                resp = scanner.nextInt();
-                scanner.nextLine();
+            try {
+                do {
+                    String msg = "*** MENU JAVA TREESET ***\n" +
+                            "Escolha uma opção:\n" +
+                            "1) Adicionar uma Série\n" +
+                            "2) Remover uma Série\n" +
+                            "3) Pesquisar uma Série\n" +
+                            "4) Listar Séries\n" +
+                            "5) Quantidade de nós\n" +
+                            "6) Exibir o último Elemento\n" +
+                            "0) Sair\n";
 
-                if (resp < 0 || resp > 5) {
-                    System.out.println("\nOpção inválida. Tente novamente.\n");
-                    continue;
-                }
+                    System.out.println(msg);
+                    System.out.print("Sua opção: ");
+                    resp = scanner.nextInt();
+                    scanner.nextLine();
 
-                switch (resp) {
-                    case 1: //Adicionando a Série
-                        System.out.println("Digite o nome da Série:");
-                        nome = scanner.nextLine();
+                    if (resp < 0 || resp > 6) {
+                        System.out.println("\nOpção inválida. Tente novamente.\n");
+                        continue;
+                    }
 
-                        System.out.println("Digite o ano da Série:");
-                        ano = scanner.nextInt();
-                        scanner.nextLine();
+                    switch (resp) {
+                        case 1: //Adicionando a Série
+                            System.out.println("Digite o nome da Série:");
+                            nome = scanner.nextLine();
 
-                        System.out.println("Digite o país da Série:");
-                        pais = scanner.nextLine();
+                            System.out.println("Digite o ano da Série:");
+                            ano = scanner.nextInt();
+                            scanner.nextLine();
 
-                        Series novaSerie = new Series(nome, ano, pais);
+                            System.out.println("Digite o país da Série:");
+                            pais = scanner.nextLine();
 
-                        long tempoAdicionar = MedidorTempo.medir(() -> l.add(novaSerie)); //Tempo de adição (Apesar de sempre funcionar, seu foco é durante o uso do arquivo)
+                            Series novaSerie = new Series(nome, ano, pais);
 
-                        System.out.println("Série adicionada com sucesso.");
-                        MedidorTempo.imprimirTempo("Tempo de inserção", tempoAdicionar);
-                        break;
+                            long tempoAdicionar = MedidorTempo.medir(() -> l.add(novaSerie)); //Tempo de adição (Apesar de sempre funcionar, seu foco é durante o uso do arquivo)
 
-                    case 2: //Removendo uma série
-                        System.out.println("Digite o nome da Série a ser removida:");
-                        nome = scanner.nextLine();
+                            System.out.println("Série adicionada com sucesso.");
+                            MedidorTempo.imprimirTempo("Tempo de inserção", tempoAdicionar);
+                            break;
 
-                        Series chaveRemocao = new Series(nome, 0, "");
+                        case 2: //Removendo uma série
+                            System.out.println("Digite o nome da Série a ser removida:");
+                            nome = scanner.nextLine();
 
-                        ResultadoMedicao<Boolean> resultadoRemocao = MedidorTempo.medirComRetorno(() -> l.remove(chaveRemocao)); //Tempo de remoção
+                            Series chaveRemocao = new Series(nome, 0, "");
 
-                        if (resultadoRemocao.getResultado()) {
-                            System.out.println("Série removida com sucesso.");
-                        } else {
-                            System.out.println("Série não existe.");
-                        }
+                            ResultadoMedicao<Boolean> resultadoRemocao = MedidorTempo.medirComRetorno(() -> l.remove(chaveRemocao)); //Tempo de remoção
 
-                        MedidorTempo.imprimirTempo("Tempo de remoção", resultadoRemocao.getTempoNano());
-                        break;
+                            if (resultadoRemocao.getResultado()) {
+                                System.out.println("Série removida com sucesso.");
+                            } else {
+                                System.out.println("Série não existe.");
+                            }
 
-                    case 3: //Buscando uma Série
-                        System.out.println("Digite o nome da Série a ser procurada:");
-                        nome = scanner.nextLine();
+                            MedidorTempo.imprimirTempo("Tempo de remoção", resultadoRemocao.getTempoNano());
+                            break;
 
-                        Series chavePesquisa = new Series(nome, 0, "");
+                        case 3: //Buscando uma Série
+                            System.out.println("Digite o nome da Série a ser procurada:");
+                            nome = scanner.nextLine();
 
-                        ResultadoMedicao<Series> resultadoPesquisa = MedidorTempo.medirComRetorno(() -> l.floor(chavePesquisa)); //floor retorna o elemento menor ou igual ao elemento pesquisado
+                            Series chavePesquisa = new Series(nome, 0, "");
 
-                        Series serieEncontrada = l.floor(chavePesquisa);
+                            ResultadoMedicao<Series> resultadoPesquisa =
+                                    MedidorTempo.medirComRetorno(() -> {
+                                        Series candidato = l.floor(chavePesquisa);
+                                        if (candidato != null
+                                                && comparador.compare(candidato, chavePesquisa) == 0) {
+                                            return candidato; // encontrou exatamente
+                                        }
+                                        return null; // não existe
+                                    });
 
-                        if (serieEncontrada == null) {
-                            System.out.println("Série não existe.");
-                        } else {
-                            System.out.println("Série encontrada: " + serieEncontrada);
-                        }
+                            Series serieEncontrada = resultadoPesquisa.getResultado();
 
-                        MedidorTempo.imprimirTempo("Tempo de pesquisa", resultadoPesquisa.getTempoNano());
-                        break;
+                            System.out.println(serieEncontrada == null
+                                    ? "Série não existe."
+                                    : "Série encontrada: " + serieEncontrada);
+                            MedidorTempo.imprimirTempo("Tempo de pesquisa", resultadoPesquisa.getTempoNano());
+                            break;
 
-                    case 4:
-                        System.out.println("Listagem das Séries:");
-                        l.forEach(System.out::println);
-                        break;
+                        case 4:
+                            System.out.println("Listagem das Séries:");
+                            l.forEach(System.out::println);
+                            break;
 
-                    case 5:
-                        ResultadoMedicao<Integer> resultadoQuantidade = MedidorTempo.medirComRetorno(() -> l.size()); //Executa o código para imprimir a quantidade de nós e o tempo corrido
+                        case 5:
+                            ResultadoMedicao<Integer> resultadoQuantidade = MedidorTempo.medirComRetorno(() -> l.size()); //Executa o código para imprimir a quantidade de nós e o tempo corrido
 
-                        System.out.println("Quantidade de nós: " + resultadoQuantidade.getResultado());
-                        MedidorTempo.imprimirTempo("Tempo do .size", resultadoQuantidade.getTempoNano());
-                        break;
+                            System.out.println("Quantidade de nós: " + resultadoQuantidade.getResultado());
+                            MedidorTempo.imprimirTempo("Tempo do .size", resultadoQuantidade.getTempoNano());
+                            break;
 
-                    case 0:
-                        System.out.println("Saindo do programa..."); //
-                        break;
-                }
+                        case 6: // Último Elemento
+                            if (!l.isEmpty()) {
+                                Series ultimo = l.last();
+                                System.out.println("Último elemento da árvore: " + ultimo);
+                            } else {
+                                System.out.println("A árvore está vazia.");
+                            }
+                            break;
 
-            } while (resp != 0);
+                        case 0:
+                            System.out.println("Saindo do programa..."); //
+                            break;
+                    }
 
-        } catch (Exception e) {
-            System.out.println("ERRO! " + e.getMessage());
-        } finally {
-            scanner.close();
+                } while (resp != 0);
+
+            } catch (Exception e) {
+                System.out.println("ERRO! " + e.getMessage());
+            } finally {
+                scanner.close();
+            }
+
+            System.out.println("Programa encerrado.");
         }
-
-        System.out.println("Programa encerrado.");
     }
-}

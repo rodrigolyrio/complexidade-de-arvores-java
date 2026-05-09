@@ -12,3 +12,14 @@ Ronnald Willian:
       - Método altura
       - Método caminharEmNível
       - Método caminharEmOrdem
+
+5) Terceira seção do relatório: Análise Empírica de complexidade de Algoritmos da sua biblioteca de árvores
+  - Ler um arquivo,inserindo em uma árvore os elementos representados no arquivo, e ao final da criação da árvore com todos os elementos do arquivo deve exibir o tempo total que levou para ler todos os registros e inserir todos na árvore. Ou seja, deve fazer exatamente o mesmo que já fazia, porém usando uma árvore ao invés de lista.
+
+  - Deve fazer uma busca pela folha mais distante da raiz(utilizando o método pesquisar) e exibir o tempo gasto para a execução do método pesquisar. (Isto seria o equivalente a buscar o último elemento da lista do trabalho anterior, ou seja, o pior caso da estrutura)
+
+  - Deve fazer uma busca por um elemento que não exista na árvore e que, se existisse, seria filho de um dos nós mais distantes da raiz(utilizando o método pesquisar) e exibir o tempo gasto para a execução do método pesquisar. (Seria equivalente à busca por um elemento que não existe na lista)
+
+  - Deve excluir a folha mais distante da raiz (utilizando o método remover) e exibir o tempo gasto para a execução do método remover. (equivalente a remover o último elemento da lista no trabalho anterior)
+
+  - Deve imprimir a quantidade de elementos da árvore (utilizando o método quantidadeNos) e exibir o tempo gasto para a execução do método quantidadeNos.

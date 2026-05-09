@@ -27,27 +27,47 @@ public class AppCustomLib {
             ResultadoMedicao<Integer> resultado = MedidorTempo.medirComRetorno(() -> {
                 int quantidade = 0;
                 // Dica: Verifique se o nome do arquivo gerado pelo seu Gerador coincide com este
-                try (BufferedReader buff = new BufferedReader(new FileReader("series_100k.txt"))) {
+                try (BufferedReader buff = new BufferedReader(new FileReader("100k_SeriesBalanceadas.txt"))) {
                     System.out.println("Carregando dados do arquivo...");
                     String linha;
+
+                    // Variáveis para guardar as posições de cada dado (necessário para o programa não verificar a cada linha a quantidade de ";" em uma linha)
+                    int idxNome = -1, idxAno = -1, idxPais = -1;
+                    boolean formatoDefinido = false;
 
                     while ((linha = buff.readLine()) != null) {
                         if (linha.trim().isEmpty()) continue;
 
                         String[] partes = linha.split(";");
 
-                        if (partes.length == 3) {
-                            String nome = partes[0];
-                            int ano = Integer.parseInt(partes[1]);
-                            String pais = partes[2];
+                        if (!formatoDefinido) {
+                            if (partes.length == 4) {           // Balanceadas: id;nome;ano;pais
+                                idxNome = 1; idxAno = 2; idxPais = 3;
+                                formatoDefinido = true;
+                            } else if (partes.length == 3) {    // Ordenadas: nome;ano;pais
+                                idxNome = 0; idxAno = 1; idxPais = 2;
+                                formatoDefinido = true;
+                            } else {
+                                continue;
+                            }
+                        }
+
+                        try {
+                            String nome = partes[idxNome];
+                            int ano     = Integer.parseInt(partes[idxAno]);
+                            String pais = partes[idxPais];
 
                             colecao.adicionar(new Series(nome, ano, pais));
                             quantidade++;
+                        } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
+                            // ignora linhas malformadas isoladas
                         }
                     }
-                } catch (IOException | NumberFormatException e) {
+
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+
                 return quantidade;
             });
 
@@ -57,18 +77,17 @@ public class AppCustomLib {
 
         } catch (RuntimeException e) {
             if (e.getCause() instanceof FileNotFoundException) {
-                System.out.println("Arquivo 'series_100k.txt' não encontrado. Iniciando com árvore vazia.\n");
+                System.out.println("Arquivo não encontrado. Iniciando com árvore vazia.\n");
             } else {
                 System.out.println("Erro ao ler o arquivo: " + e.getCause().getMessage());
             }
         }
     }
 
-    public static void main(String[] args) {
-        // Instanciação da ArvoreAVL com o Comparator por Nome
-        ArvoreAVL<Series> colecao = new ArvoreAVL<>(new ComparatorSeriesPorNome());
 
-        // Carregamento inicial dos dados [Etapa 5 e 7 da especificação]
+    public static void main(String[] args) {
+
+        ArvoreAVL<Series> colecao = new ArvoreAVL<>(new ComparatorSeriesPorNome());
         carregarDados(colecao);
 
         int ano, resp;
@@ -80,7 +99,7 @@ public class AppCustomLib {
                 System.out.println("*** MENU BIBLIOTECA PERSONALIZADA (AVL) ***");
                 System.out.println("1) Adicionar uma Série");
                 System.out.println("2) Remover uma Série");
-                System.out.println("3) Pesquisar uma Série (Pior Caso)");
+                System.out.println("3) Pesquisar uma Série");
                 System.out.println("4) Listar Séries (Em Ordem)");
                 System.out.println("5) Quantidade de nós");
                 System.out.println("6) Altura da árvore");
@@ -89,10 +108,11 @@ public class AppCustomLib {
                 System.out.print("Sua opção: ");
 
                 resp = scanner.nextInt();
-                scanner.nextLine(); // Consome a quebra de linha
+                scanner.nextLine();
 
                 switch (resp) {
-                    case 1: // Adicionar
+
+                    case 1:
                         System.out.print("Nome: ");
                         nome = scanner.nextLine();
                         System.out.print("Ano: ");
@@ -103,53 +123,56 @@ public class AppCustomLib {
 
                         Series nova = new Series(nome, ano, pais);
                         long tAdd = MedidorTempo.medir(() -> colecao.adicionar(nova));
-
                         System.out.println("Série adicionada.");
                         MedidorTempo.imprimirTempo("Tempo de inserção", tAdd);
                         break;
 
-                    case 2: // Remover
+                    case 2:
                         System.out.print("Nome para remover: ");
                         nome = scanner.nextLine();
                         Series chaveRem = new Series(nome, 0, "");
 
-                        ResultadoMedicao<Boolean> resRem = MedidorTempo.medirComRetorno(() -> colecao.remover(chaveRem));
-
+                        ResultadoMedicao<Boolean> resRem =
+                                MedidorTempo.medirComRetorno(() -> colecao.remover(chaveRem));
                         System.out.println(resRem.getResultado() ? "Removida!" : "Não encontrada.");
                         MedidorTempo.imprimirTempo("Tempo de remoção", resRem.getTempoNano());
                         break;
 
-                    case 3: // Pesquisar
+                    case 3:
                         System.out.print("Nome para pesquisar: ");
                         nome = scanner.nextLine();
                         Series chavePesq = new Series(nome, 0, "");
 
-                        // Medição obrigatória para o relatório [Etapa 5]
-                        ResultadoMedicao<Series> resPesq = MedidorTempo.medirComRetorno(() -> colecao.pesquisar(chavePesq));
-
-                        System.out.println(resPesq.getResultado() != null ? "Achou: " + resPesq.getResultado() : "Não existe.");
+                        ResultadoMedicao<Series> resPesq =
+                                MedidorTempo.medirComRetorno(() -> colecao.pesquisar(chavePesq));
+                        System.out.println(resPesq.getResultado() != null
+                                ? "Achou: " + resPesq.getResultado()
+                                : "Não existe.");
                         MedidorTempo.imprimirTempo("Tempo de pesquisa", resPesq.getTempoNano());
                         break;
 
-                    case 4: // Listar
+                    case 4:
                         System.out.println("Séries em ordem:");
-                        System.out.println(colecao); // Chama toString/caminharEmOrdem
+                        System.out.println(colecao); // toString() → caminharEmOrdem()
                         break;
 
-                    case 5: // Quantidade de nós
-                        ResultadoMedicao<Integer> resQtd = MedidorTempo.medirComRetorno(colecao::quantidadeNos);
+                    case 5:
+                        ResultadoMedicao<Integer> resQtd =
+                                MedidorTempo.medirComRetorno(colecao::quantidadeNos);
                         System.out.println("Total de nós: " + resQtd.getResultado());
                         MedidorTempo.imprimirTempo("Tempo de quantidadeNos", resQtd.getTempoNano());
                         break;
 
-                    case 6: // Altura
-                        ResultadoMedicao<Integer> resAlt = MedidorTempo.medirComRetorno(colecao::altura);
-                        System.out.println("Altura atual: " + resAlt.getResultado());
+                    case 6:
+                        ResultadoMedicao<Integer> resAlt =
+                                MedidorTempo.medirComRetorno(colecao::altura);
+                        System.out.println("Altura atual (AVL): " + resAlt.getResultado());
                         MedidorTempo.imprimirTempo("Tempo de altura", resAlt.getTempoNano());
                         break;
 
-                    case 7: // Nível
-                        ResultadoMedicao<String> resNiv = MedidorTempo.medirComRetorno(colecao::caminharEmNivel);
+                    case 7:
+                        ResultadoMedicao<String> resNiv =
+                                MedidorTempo.medirComRetorno(colecao::caminharEmNivel);
                         System.out.println("Caminhamento em nível:");
                         System.out.println(resNiv.getResultado());
                         MedidorTempo.imprimirTempo("Tempo de caminhamento em nível", resNiv.getTempoNano());
