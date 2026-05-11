@@ -93,7 +93,7 @@ O repositório já contém os arquivos de dados necessários para a análise. Si
 ## 5. Relatório Final
 A documentação completa com as análises matemáticas linha a linha e a interpretação detalhada dos resultados obtidos pode ser acessada aqui:
 
-👉 **LINK**
+👉 **LINK**: https://docs.google.com/document/d/1Me9teVo2if3vAhG-KBtW8fLXEUxXMsPEve3dRthtZC8/edit?usp=sharing
 
 ## 6. Autores
 * **Myllena Furtado Toniato** 
